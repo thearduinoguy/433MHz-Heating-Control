@@ -1,10 +1,10 @@
+// By Mike McRoberts 2016
+// Control of a Worcester 24CDi Boiler via 433MHz radio transmitter
 
 int on[]   = {0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1};
-
 int off[]  = {0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1};
 
 /****************************************************************/
-
 void setup() {
   pinMode(2, OUTPUT);
   Serial.begin(115200);
@@ -13,11 +13,8 @@ void setup() {
 }
 
 /****************************************************************/
-
 void heatingOn()
 {
-
-  // Turn off the output.
   Serial.println("Boiler On");
   for (int repeat = 1; repeat <= 3; repeat++)
   {
@@ -41,20 +38,14 @@ void heatingOn()
           delayMicroseconds(500);
           break;
       }
-
     }
     delay(1000);
-
   }
-
 }
 
 /****************************************************************/
-
 void heatingOff()
 {
-
-
   Serial.println("Boiler Off");
   for (int repeat = 1; repeat <= 3; repeat++)
   {
@@ -78,15 +69,12 @@ void heatingOff()
           delayMicroseconds(500);
           break;
       }
-
     }
     delay(1000);
   }
-
 }
 
 /****************************************************************/
-
 void loop()
 {
   heatingOn();
