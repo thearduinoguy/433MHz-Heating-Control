@@ -1,56 +1,18 @@
-// By Mike McRoberts 2016
-// Control of a Worcester 24CDi Boiler via 433MHz radio transmitter
-
-int on[]   = {0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1};
-int off[]  = {0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1};
-
-/****************************************************************/
 void setup() {
   pinMode(2, OUTPUT);
-  Serial.begin(115200);
-  Serial.println("Ready");
   delay(2000);
 }
 
 /****************************************************************/
-void heatingOn()
+void heatingControl(boolean onOff)
 {
-  Serial.println("Boiler On");
-  for (int repeat = 1; repeat <= 3; repeat++)
-  {
-    for (int i = 0; i < sizeof( on ) / sizeof( int ); i++) {
-      switch (on[i])
-      {
-        case 0:
-          digitalWrite(2, LOW);
-          delayMicroseconds(500);
-          digitalWrite(2, HIGH);
-          delayMicroseconds(500);
-          break;
-        case 1:
-          digitalWrite(2, HIGH);
-          delayMicroseconds(500);
-          digitalWrite(2, LOW);
-          delayMicroseconds(500);
-          break;
-        case 2:
-          digitalWrite(2, LOW);
-          delayMicroseconds(500);
-          break;
-      }
-    }
-    delay(1000);
-  }
-}
+  int on[]   = {0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1};
+  int off[]  = {0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1};
 
-/****************************************************************/
-void heatingOff()
-{
-  Serial.println("Boiler Off");
   for (int repeat = 1; repeat <= 3; repeat++)
   {
-    for (int i = 0; i < sizeof( off ) / sizeof( int ); i++) {
-      switch (off[i])
+    for (int i = 0; i < sizeof( onOff ? on : off  ) / sizeof( int ); i++) {
+      switch (onOff ? on[i] : off[i])
       {
         case 0:
           digitalWrite(2, LOW);
@@ -65,7 +27,7 @@ void heatingOff()
           delayMicroseconds(500);
           break;
         case 2:
-          digitalWrite(2, LOW       );
+          digitalWrite(2, LOW);
           delayMicroseconds(500);
           break;
       }
@@ -77,9 +39,9 @@ void heatingOff()
 /****************************************************************/
 void loop()
 {
-  heatingOn();
+  heatingControl(true);
   delay(20000);
 
-  heatingOff();
+  heatingControl(false);
   delay(20000);
 }
