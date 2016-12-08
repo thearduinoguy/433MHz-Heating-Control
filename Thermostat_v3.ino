@@ -1,3 +1,5 @@
+#define ON 1
+#define OFF 0
 
 #include <Wire.h>
 #include "SparkFunHTU21D.h"
@@ -10,16 +12,16 @@
 
 HTU21D myHumidity;
 
-char auth[] = "xxxxxxxx";
-char ssid[] = "xxxxxxxx";
-char pass[] = "xxxxxxxx";
+char auth[] = "xxx";
+char ssid[] = "xxx";
+char pass[] = "xxx";
 
 unsigned long lastButtonPress;
 unsigned long lastTransmit;
 unsigned long lastUpdate;
 unsigned long lastTempCheck;
 
-int heatingState;
+int enabledState;
 int firstTime = 1;
 int requiredTemp;
 float temp;
@@ -46,11 +48,11 @@ void setup()
   lastTransmit = millis();
   lastUpdate = millis();
   lastTempCheck = millis();
-  heatingState = EEPROM.read(1);
-  Serial.print("EEPROM: Heating Set to ");
-  Serial.println(heatingState ? "ON" : "OFF");
+  enabledState = EEPROM.read(1);
+  Serial.print("EEPROM: System is  ");
+  Serial.println(enabledState ? "ENABLED" : "DISABLED");
   requiredTemp = EEPROM.read(2);
-  Serial.print("EEPROM: Last Temperature is ");
+  Serial.print("EEPROM: Target Temperature is ");
   Serial.println(String(requiredTemp) + "°C");
   delay(500);
   Blynk.syncAll();
@@ -69,27 +71,26 @@ BLYNK_WRITE(V0)
 {
   //int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
 
-  Serial.print("Button state is: ");
-  Serial.println(heatingState);
+  Serial.print("System  is ");
+  Serial.println(enabledState ? "ENABLED" : "DISABLED");
 
   if ((millis() - lastButtonPress) < 30000)
   {
     Blynk.virtualWrite(V1, "Please Wait");
     Serial.println("Please wait");
-    Blynk.virtualWrite(V0, heatingState);
+    Blynk.virtualWrite(V0, enabledState);
   }
   else
   {
     lastButtonPress = millis();
-    heatingState = !heatingState;
+    enabledState = !enabledState;
     Serial.print("Heating ");
-    Serial.println(heatingState ? "ON" : "OFF");
-    EEPROM.write(1, heatingState);
+    Serial.println(enabledState ? "ON" : "OFF");
+    EEPROM.write(1, enabledState);
     EEPROM.commit();
-    Blynk.virtualWrite(V0, heatingState);
-    heatingControl(heatingState);
+    Blynk.virtualWrite(V0, enabledState);
     Serial.print("Button state is: ");
-    Serial.println(heatingState);
+    Serial.println(enabledState);
   }
 }
 
@@ -98,6 +99,8 @@ BLYNK_WRITE(V10)
   requiredTemp = param.asInt();  Blynk.run();
   EEPROM.write(2, requiredTemp);
   EEPROM.commit();
+  Serial.print("Target Temperature is ");
+  Serial.println(requiredTemp);
 }
 
 /****************************************************************/
@@ -144,23 +147,7 @@ void heatingControl(boolean onOff)
 void updateBlynk()
 {
   Blynk.run();
-  switch (heatingState)
-  {
-    case 0:
-      Blynk.virtualWrite(V1, "Heating OFF");  Blynk.run();
-      Blynk.setProperty(V1, "color", "#FF0000");  Blynk.run();
-      Blynk.setProperty(V0, "color", "#FF0000");  Blynk.run();
-      Blynk.virtualWrite(V0, 0);  Blynk.run();
-      heatingLED.off();       Blynk.run();
-      break;
-    case 1:
-      Blynk.virtualWrite(V1, "Heating ON");  Blynk.run();
-      Blynk.setProperty(V1, "color", "#00FF00"); Blynk.run();
-      Blynk.setProperty(V0, "color", "#00FF00"); Blynk.run();
-      Blynk.virtualWrite(V0, 1); Blynk.run();
-      heatingLED.on();       Blynk.run();
-      break;
-  }
+
   Blynk.virtualWrite(V11, requiredTemp);  Blynk.run();
 }
 
@@ -181,17 +168,26 @@ void getTemps()
 
 void checkTemp()
 {
-  if (temp > requiredTemp)
+  if ((temp > requiredTemp) && (enabledState == ON))
   {
-    heatingState = 0;
-    heatingControl(heatingState);
+    heatingControl(OFF);
+    Blynk.virtualWrite(V1, "Heating OFF");  Blynk.run();
+    Blynk.setProperty(V1, "color", "#FF0000");  Blynk.run();
+    Blynk.setProperty(V0, "color", "#FF0000");  Blynk.run();
+    Blynk.virtualWrite(V0, 0);  Blynk.run();
+    heatingLED.off();       Blynk.run();
   }
 
-  if (temp < requiredTemp)
+  if ((temp < requiredTemp) && (enabledState == ON))
   {
-    heatingState = 1;
-    heatingControl(heatingState);
+    heatingControl(ON);
+    Blynk.virtualWrite(V1, "Heating ON");  Blynk.run();
+    Blynk.setProperty(V1, "color", "#00FF00"); Blynk.run();
+    Blynk.setProperty(V0, "color", "#00FF00"); Blynk.run();
+    Blynk.virtualWrite(V0, 1); Blynk.run();
+    heatingLED.on();       Blynk.run();
   }
+
   lastTempCheck = millis();
 }
 
@@ -202,7 +198,8 @@ void loop()
 
   if ((millis() -   lastTransmit) > 60000)
   {
-    heatingControl(heatingState);
+    if ((temp < requiredTemp) && (enabledState == ON)) heatingControl(ON);
+    else heatingControl(OFF);
   }
 
   if ((millis() -   lastUpdate) > 1000)
