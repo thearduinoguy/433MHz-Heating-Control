@@ -1,3 +1,4 @@
+
 #include <Wire.h>
 #include "SparkFunHTU21D.h"
 #include <ESP8266WiFi.h>
@@ -58,8 +59,8 @@ void setup()
 BLYNK_CONNECTED() {
   Serial.println("CONNECTED");  Blynk.run();
   powerLED.on();  Blynk.run();
-  Blynk.virtualWrite(V8, requiredTemp);  Blynk.run();
-  Blynk.virtualWrite(V9, requiredTemp);  Blynk.run();
+  Blynk.virtualWrite(V11, requiredTemp);  Blynk.run();
+  Blynk.virtualWrite(V10, requiredTemp);  Blynk.run();
 }
 
 
@@ -92,7 +93,7 @@ BLYNK_WRITE(V0)
   }
 }
 
-BLYNK_WRITE(V9)
+BLYNK_WRITE(V10)
 {
   requiredTemp = param.asInt();  Blynk.run();
   EEPROM.write(2, requiredTemp);
@@ -160,7 +161,7 @@ void updateBlynk()
       heatingLED.on();       Blynk.run();
       break;
   }
-  Blynk.virtualWrite(V8, requiredTemp);  Blynk.run();
+  Blynk.virtualWrite(V11, requiredTemp);  Blynk.run();
 }
 
 void getTemps()
@@ -174,6 +175,8 @@ void getTemps()
 
   Blynk.virtualWrite(V7, String(Buffer1) + "%"); Blynk.run();
   Blynk.virtualWrite(V6, String(Buffer2) + "℃"); Blynk.run();
+  Blynk.virtualWrite(V8, temp);
+  Blynk.virtualWrite(V9, humd);
 }
 
 void checkTemp()
