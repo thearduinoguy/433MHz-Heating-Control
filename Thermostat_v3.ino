@@ -10,9 +10,9 @@
 
 HTU21D myHumidity;
 
-char auth[] = "55a851e78c4a4914bf29f4c7e364c89d";
-char ssid[] = "Earthshine";
-char pass[] = "DoAndroidsDreamOfElectricSheep2016";
+char auth[] = "xxxxxxxx";
+char ssid[] = "xxxxxxxx";
+char pass[] = "xxxxxxxx";
 
 unsigned long lastButtonPress;
 unsigned long lastTransmit;
