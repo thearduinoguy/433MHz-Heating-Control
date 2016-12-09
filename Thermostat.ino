@@ -131,15 +131,8 @@ void getTemps()
 
 void checkTemp()
 {
-  if ((temp > requiredTemp) && (enabledState == ON))
-  {
-    heatingControl(OFF);
-  }
-
-  if ((temp < requiredTemp) && (enabledState == ON))
-  {
-    heatingControl(ON);
-  }
+  if ((temp > requiredTemp) && (enabledState == ON)) heatingControl(OFF);  
+  if ((temp < requiredTemp) && (enabledState == ON)  heatingControl(ON);
   lastTempCheck = millis();
 }
 
@@ -160,9 +153,5 @@ void loop()
     lastUpdate = millis();
   }
 
-  if ((millis() -   lastTempCheck) > 60000)
-  {
-    checkTemp();
-  }
-
+  if ((millis() -   lastTempCheck) > 60000) checkTemp();
 }
