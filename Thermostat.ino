@@ -22,7 +22,6 @@ unsigned long lastTempCheck;
 float temp;
 
 int enabledState;
-int firstTime = 1;
 int requiredTemp;
 
 void setup()
