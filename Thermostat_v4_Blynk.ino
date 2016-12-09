@@ -12,9 +12,9 @@
 
 HTU21D myHumidity;
 
-char auth[] = "xxxx";
-char ssid[] = "xxxx";
-char pass[] = "xxxx";
+char auth[] = "xxx";
+char ssid[] = "xxx";
+char pass[] = "xxx";
 
 unsigned long lastTransmit;
 unsigned long lastUpdate;
@@ -75,7 +75,6 @@ BLYNK_WRITE(V2)
 {
   requiredTemp = param.asInt();  Blynk.run();
   Blynk.virtualWrite(V3, requiredTemp);  Blynk.run();
-  //Blynk.virtualWrite(V10, requiredTemp);  Blynk.run();
   EEPROM.write(2, requiredTemp);
   EEPROM.commit();
   Serial.println("Target Temperature is " + String(requiredTemp));
