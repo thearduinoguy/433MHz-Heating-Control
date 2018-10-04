@@ -12,16 +12,19 @@
 
 HTU21D myHumidity;
 
-char auth[] = "xxx";
-char ssid[] = "xxx";
-char pass[] = "xxx";
+char auth[] = "xxxxx";
+char ssid[] = "xxxxx";
+char pass[] = "xxxxx";
 
 unsigned long lastTransmit;
 unsigned long lastUpdate;
 unsigned long lastTempCheck;
+unsigned long lastLedFlash;
 float temp;
 
 int enabledState;
+int ledState = 0;
+int firstTime = 1;
 int requiredTemp;
 
 void setup()
@@ -40,6 +43,7 @@ void setup()
   lastTransmit = millis();
   lastUpdate = millis();
   lastTempCheck = millis();
+  lastLedFlash = millis();
   enabledState = EEPROM.read(1);
   Serial.println("EEPROM: System is  " + String(enabledState ? "ENABLED" : "DISABLED"));
   requiredTemp = EEPROM.read(2);
@@ -74,6 +78,7 @@ BLYNK_WRITE(V2)
 {
   requiredTemp = param.asInt();  Blynk.run();
   Blynk.virtualWrite(V3, requiredTemp);  Blynk.run();
+  //Blynk.virtualWrite(V10, requiredTemp);  Blynk.run();
   EEPROM.write(2, requiredTemp);
   EEPROM.commit();
   Serial.println("Target Temperature is " + String(requiredTemp));
@@ -110,7 +115,8 @@ void heatingControl(boolean onOff)
       }
     }
     int waitTime = millis();
-    if ((millis() - waitTime) < 1000) {
+    delay(1);
+    while ((millis() - waitTime) < 1000) {
       Blynk.run();
     }
   }
@@ -131,8 +137,15 @@ void getTemps()
 
 void checkTemp()
 {
-  if ((temp > requiredTemp) && (enabledState == ON)) heatingControl(OFF);  
-  if ((temp < requiredTemp) && (enabledState == ON)  heatingControl(ON);
+  if ((temp > requiredTemp) && (enabledState == ON))
+  {
+    heatingControl(OFF);
+  }
+
+  if ((temp < requiredTemp) && (enabledState == ON))
+  {
+    heatingControl(ON);
+  }
   lastTempCheck = millis();
 }
 
@@ -149,9 +162,19 @@ void loop()
   if ((millis() -   lastUpdate) > 1000)
   {
     getTemps();
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     lastUpdate = millis();
   }
 
-  if ((millis() -   lastTempCheck) > 60000) checkTemp();
+  if ((millis() -   lastTempCheck) > 60000)
+  {
+    checkTemp();
+  }
+
+  if ((millis() - lastLedFlash) > (ledState ? 5000 : 50))
+  {
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    lastLedFlash = millis();
+    ledState = !ledState;
+  }
+
 }
